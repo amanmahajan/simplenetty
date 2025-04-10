@@ -1,9 +1,10 @@
 use crate::channel::Channel;
 use crate::channel::*;
-use crate::tcp_channel::TcpChannel;
 use std::collections::HashMap;
 use std::net::TcpListener;
 use std::os::fd::RawFd;
+use std::sync::Arc;
+use crate::tcp_channel::{SocketChannelHandler, TcpChannel};
 
 trait EventLoop {
     fn register_channel(&mut self, channel: Box<dyn Channel>);
@@ -43,7 +44,10 @@ impl EventLoop for EpollEventLoop {
                     if let Ok((mut stream, addr)) = self.listener.accept() {
                         println!("Accepted connection from: {:?}", addr);
 
-                        let channel = TcpChannel::new(stream);
+                        // We might not be initializing it here
+                        let handler = Arc::new(SocketChannelHandler::new());
+
+                        let channel = TcpChannel::new(stream, handler);
                         self.register_channel(Box::new(channel));
                     } else {
                         println!("Failed to accept connection");
