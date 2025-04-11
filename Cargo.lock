@@ -29,4 +29,5 @@ name = "simplenetty"
 version = "0.1.0"
 dependencies = [
  "epoll",
+ "libc",
 ]
